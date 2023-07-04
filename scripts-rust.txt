@@ -1,0 +1,128 @@
+//exemplo 1-
+
+fn main() {
+    let num1 = 10;
+    let num2 = 5;
+    let sum = add_numbers(num1, num2);
+    println!("A soma de {} e {} é: {}", num1, num2, sum);
+}
+
+fn add_numbers(a: i32, b: i32) -> i32 {
+    return a + b;
+}
+
+// exemplo ownership
+
+fn main() {
+    let s = String::from("Hello"); // String criada e de propriedade da variável 's'
+    take_ownership(s); // 's' é transferida para a função 'take_ownership'
+
+    // 's' não é mais válida aqui, pois a propriedade foi transferida
+
+    let x = 5; // Variável 'x' de propriedade da função 'main'
+    make_copy(x); // 'x' é passada por valor para a função 'make_copy'
+
+    // 'x' ainda é válida aqui, pois i32 implementa a trait 'Copy'
+
+} // As variáveis 's' e 'x' são liberadas aqui
+  // A memória ocupada por 's' é desalocada automaticamente
+  // 'x' não requer desalocação, pois é um tipo 'Copy'
+
+fn take_ownership(some_string: String) {
+    println!("Valor recebido: {}", some_string);
+    // 'some_string' é válida aqui e é de propriedade da função 'take_ownership'
+} // 'some_string' é liberada aqui e a memória ocupada por ela é desalocada
+
+fn make_copy(some_integer: i32) {
+    println!("Valor recebido: {}", some_integer);
+    // 'some_integer' é válida aqui e é de propriedade da função 'make_copy'
+} // 'some_integer' é liberada aqui
+
+
+
+// exemplo 03 borrowing
+
+fn main() {
+    let s = String::from("Hello"); // String criada e de propriedade da variável 's'
+    let len = calculate_length(&s); // Passagem de empréstimo de referência para a função 'calculate_length'
+
+    println!("O comprimento da string '{}' é {}", s, len);
+    // 's' continua sendo válida aqui, pois a referência foi emprestada para a função 'calculate_length'
+}
+
+fn calculate_length(s: &String) -> usize {
+    s.len()
+    // 's' é apenas uma referência à String original e não possui propriedade
+    // O valor da String original não pode ser modificado através dessa referência
+}
+
+
+// exemplo 04 lifetime
+fn main() {
+    let result;
+
+    {
+        let s1 = String::from("Hello"); // String criada e de propriedade da variável 's1'
+        let s2 = String::from("World"); // String criada e de propriedade da variável 's2'
+
+        result = longest_word(&s1, &s2); // Passagem de empréstimo de referências para a função 'longest_word'
+        println!("A palavra mais longa é: {}", result);
+        // As referências 's1' e 's2' continuam sendo válidas aqui, dentro do escopo interno
+    }
+
+    // As referências 's1' e 's2' estão fora de escopo e não são mais válidas aqui
+    // A variável 'result' ainda é válida aqui, pois tem uma vida maior
+
+    // println!("A palavra mais longa é: {}", result); // Erro! 'result' está vinculado a referências inválidas
+}
+
+fn longest_word<'a>(s1: &'a str, s2: &'a str) -> &'a str {
+    if s1.len() > s2.len() {
+        s1
+    } else {
+        s2
+    }
+    // A função retorna uma referência para uma das strings de entrada
+    // A anotação <'a> indica que a referência retornada tem o mesmo tempo de vida que as referências de entrada
+}
+
+// exemplo 05 tratamento de erros
+use std::fs::File;
+use std::io::Read;
+
+fn main() {
+    let file_name = "example.txt";
+
+    match read_file_contents(file_name) {
+        Ok(contents) => {
+            println!("Conteúdo do arquivo '{}':\n{}", file_name, contents);
+        }
+        Err(error) => {
+            eprintln!("Erro ao ler o arquivo '{}': {}", file_name, error);
+        }
+    }
+}
+
+fn read_file_contents(file_name: &str) -> Result<String, std::io::Error> {
+    let mut file = File::open(file_name)?;
+
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+
+    Ok(contents)
+}
+
+//exemplo 06 macros
+
+macro_rules! greet {
+    ($name:expr) => {
+        println!("Hello, {}!", $name);
+    };
+}
+
+fn main() {
+    greet!("John"); // Chama a macro 'greet' com o argumento "John"
+    greet!("Alice"); // Chama a macro 'greet' com o argumento "Alice"
+}
+
+
